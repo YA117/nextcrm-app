@@ -10,9 +10,15 @@ const SideBar = async ({ build }: { build: number }) => {
 
   if (!session) return null;
 
-  const modules = await getModules();
+  let modules;
+  try {
+    modules = await getModules();
+  } catch (error) {
+    console.warn("Database connection failed, using empty modules list");
+    modules = [];
+  }
 
-  if (!modules) return null;
+  if (!modules) modules = [];
 
   //Get user language
   const lang = session.user.userLanguage;

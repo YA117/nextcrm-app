@@ -1,25 +1,9 @@
 import { prismadb } from "@/lib/prisma";
 import { NextAuthOptions } from "next-auth";
-import GoogleProvider from "next-auth/providers/google";
-import GitHubProvider from "next-auth/providers/github";
 import CredentialsProvider from "next-auth/providers/credentials";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import { newUserNotify } from "./new-user-notify";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
-
-function getGoogleCredentials(): { clientId: string; clientSecret: string } {
-  const clientId = process.env.GOOGLE_ID;
-  const clientSecret = process.env.GOOGLE_SECRET;
-  if (!clientId || clientId.length === 0) {
-    throw new Error("Missing GOOGLE_ID");
-  }
-
-  if (!clientSecret || clientSecret.length === 0) {
-    throw new Error("Missing GOOGLE_SECRET");
-  }
-
-  return { clientId, clientSecret };
-}
 
 export const authOptions: NextAuthOptions = {
   secret: process.env.JWT_SECRET,
@@ -29,17 +13,6 @@ export const authOptions: NextAuthOptions = {
   },
 
   providers: [
-    GoogleProvider({
-      clientId: getGoogleCredentials().clientId,
-      clientSecret: getGoogleCredentials().clientSecret,
-    }),
-
-    GitHubProvider({
-      name: "github",
-      clientId: process.env.GITHUB_ID!,
-      clientSecret: process.env.GITHUB_SECRET!,
-    }),
-
     CredentialsProvider({
       name: "credentials",
       credentials: {
@@ -100,7 +73,7 @@ export const authOptions: NextAuthOptions = {
               is_account_admin: false,
               lastLoginAt: new Date(),
               userStatus:
-                process.env.NEXT_PUBLIC_APP_URL === "https://demo.nextcrm.io"
+                process.env.NEXT_PUBLIC_APP_URL === "https://demo.cohero.app"
                   ? "ACTIVE"
                   : "PENDING",
             },

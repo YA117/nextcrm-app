@@ -14,6 +14,10 @@ import CrmModuleMenu from "./menu-items/Crm";
 
 import AdministrationMenu from "./menu-items/Administration";
 import DashboardMenu from "./menu-items/Dashboard";
+import DiscoveryModuleMenu from "./menu-items/Discovery";
+import ListsModuleMenu from "./menu-items/Lists";
+
+
 import EmailsModuleMenu from "./menu-items/Emails";
 import { cn } from "@/lib/utils";
 
@@ -38,30 +42,29 @@ const ModuleMenu = ({ modules, dict, build }: Props) => {
   return (
     <div className="flex flex-col">
       <div
-        className={` ${
-          open ? "w-72" : "w-20 "
-        }  h-screen p-5  pt-8 relative duration-300`}
+        className={` ${open ? "w-72" : "w-20 "
+          }  h-screen p-5  pt-8 relative duration-300`}
       >
         <div className="flex gap-x-4 items-center">
           <div
-            className={`cursor-pointer duration-500 border rounded-full px-4 py-2 ${
-              open && "rotate-[360deg]"
-            }`}
+            className={`cursor-pointer duration-500 border rounded-full px-4 py-2 ${open && "rotate-[360deg]"
+              }`}
             onClick={() => setOpen(!open)}
           >
             N
           </div>
 
           <h1
-            className={` origin-left font-medium text-xl duration-200 ${
-              !open && "scale-0"
-            }`}
+            className={` origin-left font-medium text-xl duration-200 ${!open && "scale-0"
+              }`}
           >
             {process.env.NEXT_PUBLIC_APP_NAME}
           </h1>
         </div>
         <div className="pt-6">
           <DashboardMenu open={open} title={dict.ModuleMenu.dashboard} />
+          <DiscoveryModuleMenu open={open} />
+          <ListsModuleMenu open={open} />
           {modules.find(
             (menuItem: any) => menuItem.name === "crm" && menuItem.enabled
           ) ? (

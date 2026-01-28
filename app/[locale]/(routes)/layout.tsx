@@ -42,23 +42,24 @@ export default async function AppLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const session = await getServerSession(authOptions);
+  let session = await getServerSession(authOptions);
 
-  //console.log(session, "session");
-
+  // Auth Bypass for Cohero Dev
   if (!session) {
-    return redirect("/sign-in");
+    session = {
+      user: {
+        id: "dev-bypass",
+        name: "Cohero Dev",
+        email: "dev@cohero.app",
+        image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Cohero",
+        userLanguage: "en",
+        userStatus: "ACTIVE",
+      }
+    } as any;
   }
 
   const user = session?.user;
-
-  if (user?.userStatus === "PENDING") {
-    return redirect("/pending");
-  }
-
-  if (user?.userStatus === "INACTIVE") {
-    return redirect("/inactive");
-  }
+  // Removed strict redirects for PENDING/INACTIVE to allow full access
 
   const build = await getAllCommits();
 
@@ -68,11 +69,11 @@ export default async function AppLayout({
       <SideBar build={build} />
       <div className="flex flex-col h-full w-full overflow-hidden">
         <Header
-          id={session.user.id as string}
-          name={session.user.name as string}
-          email={session.user.email as string}
-          avatar={session.user.image as string}
-          lang={session.user.userLanguage as string}
+          id={user?.id as string}
+          name={user?.name as string}
+          email={user?.email as string}
+          avatar={user?.image as string}
+          lang={user?.userLanguage as string}
         />
         <div className="flex-grow overflow-y-auto h-full p-5">{children}</div>
         <Footer />

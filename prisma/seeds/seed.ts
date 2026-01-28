@@ -1,92 +1,114 @@
-//import { PrismaClient } from "@prisma/client";
 const { PrismaClient } = require("@prisma/client");
-/*
-Seed data is used to populate the database with initial data.
-*/
-//Menu Items
-const moduleData = require("../initial-data/system_Modules_Enabled.json");
-//GPT Models
-const gptModelsData = require("../initial-data/gpt_Models.json");
-//CRM
-const crmOpportunityTypeData = require("../initial-data/crm_Opportunities_Type.json");
-const crmOpportunitySaleStagesData = require("../initial-data/crm_Opportunities_Sales_Stages.json");
-const crmCampaignsData = require("../initial-data/crm_campaigns.json");
-const crmIndustryTypeData = require("../initial-data/crm_Industry_Type.json");
 
 const prisma = new PrismaClient();
 
 async function main() {
-  // Your seeding logic here using Prisma Client
   console.log("-------- Seeding DB --------");
 
-  //Seed Menu Items
-  const modules = await prisma.system_Modules_Enabled.findMany();
+  // cleanup (optional, be careful in prod)
+  // await prisma.influencer.deleteMany();
+  // await prisma.campaign.deleteMany();
 
-  if (modules.length === 0) {
-    await prisma.system_Modules_Enabled.createMany({
-      data: moduleData,
+  // Create Sample Influencers
+  const influencers = [
+    {
+      firstName: "Sarah",
+      lastName: "Jenkins",
+      handle: "sarahjenkins_fit",
+      platform: "INSTAGRAM", // Using the enum string
+      followers: 45200,
+      engagementRate: 3.8,
+      niche: ["Fitness", "Wellness"],
+      location: "Los Angeles, CA",
+      bio: "Fitness enthusiast | Yoga teacher | LA based",
+      email: "sarah@example.com",
+      avatar: "https://randomuser.me/api/portraits/women/44.jpg",
+      tags: ["Yoga", "High Engagement"],
+      ratePost: 350,
+    },
+    {
+      firstName: "Mike",
+      lastName: "Chen",
+      handle: "mike_lifts",
+      platform: "TIKTOK",
+      followers: 82000,
+      engagementRate: 5.2,
+      niche: ["Fitness", "Gym"],
+      location: "New York, NY",
+      bio: "Powerlifting and nutrition tips.",
+      email: "mike@example.com",
+      avatar: "https://randomuser.me/api/portraits/men/32.jpg",
+      tags: ["Strength", "Video"],
+      ratePost: 500,
+    },
+    {
+      firstName: "Emily",
+      lastName: "Rose",
+      handle: "emily.beauty",
+      platform: "INSTAGRAM",
+      followers: 28000,
+      engagementRate: 2.9,
+      niche: ["Beauty", "Skincare"],
+      location: "London, UK",
+      bio: "Skincare addict. Sephora partner.",
+      email: "emily@example.com",
+      avatar: "https://randomuser.me/api/portraits/women/65.jpg",
+      tags: ["Skincare", "Makeup"],
+      ratePost: 250,
+    }
+  ];
+
+  console.log("Seeding Influencers...");
+  for (const inf of influencers) {
+    // Upsert to avoid duplicates if re-running
+    // Assuming handle is unique enough for seeding check, or just createMany if we wipe
+    // Since handle isn't @unique in schema yet (it should be probably), we'll check first or just create.
+    
+    const existing = await prisma.influencer.findFirst({
+        where: { handle: inf.handle }
     });
-    console.log("Modules seeded successfully");
-  } else {
-    console.log("Modules already seeded");
+
+    if (!existing) {
+        await prisma.influencer.create({ data: inf });
+    }
   }
 
-  //Seed CRM Opportunity Types
-  const crmOpportunityType = await prisma.crm_Opportunities_Type.findMany();
+  // Create a Demo Users
+  const userEmail = "demo@example.com";
+  let user = await prisma.users.findUnique({
+    where: { email: userEmail },
+  });
 
-  if (crmOpportunityType.length === 0) {
-    await prisma.crm_Opportunities_Type.createMany({
-      data: crmOpportunityTypeData,
+  if (!user) {
+    console.log("Creating Demo User...");
+    user = await prisma.users.create({
+      data: {
+        email: userEmail,
+        name: "Demo User",
+        password: "password123", // In real app, hash this
+      },
     });
-    console.log("Opportunity Types seeded successfully");
-  } else {
-    console.log("Opportunity Types already seeded");
   }
 
-  const crmOpportunitySaleStages =
-    await prisma.crm_Opportunities_Sales_Stages.findMany();
+  // Create a Sample Campaign
+  const campaignName = "Summer Launch 2026";
+  const existingCampaign = await prisma.campaign.findFirst({
+    where: { name: campaignName }
+  });
 
-  if (crmOpportunitySaleStages.length === 0) {
-    await prisma.crm_Opportunities_Sales_Stages.createMany({
-      data: crmOpportunitySaleStagesData,
+  if (!existingCampaign && user) {
+    console.log("Creating Sample Campaign...");
+    const campaign = await prisma.campaign.create({
+      data: {
+        name: campaignName,
+        description: "Launch campaign for the new summer skincare line.",
+        brand: "GlowCosmetics",
+        budget: 5000,
+        status: "DRAFT",
+        ownerId: user.id,
+        objectives: ["Brand Awareness", "UGC"],
+      }
     });
-    console.log("Opportunity Sales Stages seeded successfully");
-  } else {
-    console.log("Opportunity Sales Stages already seeded");
-  }
-
-  const crmCampaigns = await prisma.crm_campaigns.findMany();
-
-  if (crmCampaigns.length === 0) {
-    await prisma.crm_campaigns.createMany({
-      data: crmCampaignsData,
-    });
-    console.log("Campaigns seeded successfully");
-  } else {
-    console.log("Campaigns already seeded");
-  }
-
-  const crmIndustryType = await prisma.crm_Industry_Type.findMany();
-
-  if (crmIndustryType.length === 0) {
-    await prisma.crm_Industry_Type.createMany({
-      data: crmIndustryTypeData,
-    });
-    console.log("Industry Types seeded successfully");
-  } else {
-    console.log("Industry Types already seeded");
-  }
-
-  //Seed GPT Models
-  const gptModels = await prisma.gpt_models.findMany();
-
-  if (gptModels.length === 0) {
-    await prisma.gpt_models.createMany({
-      data: gptModelsData,
-    });
-    console.log("GPT Models seeded successfully");
-  } else {
-    console.log("GPT Models already seeded");
   }
 
   console.log("-------- Seed DB completed --------");
